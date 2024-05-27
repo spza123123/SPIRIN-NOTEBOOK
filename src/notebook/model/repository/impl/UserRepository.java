@@ -1,17 +1,17 @@
 package notebook.model.repository.impl;
 
 import notebook.model.dao.impl.FileOperation;
+import notebook.util.UserValidator;
 import notebook.util.mapper.impl.UserMapper;
 import notebook.model.User;
 import notebook.model.repository.GBRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class UserRepository implements GBRepository {
     private final UserMapper mapper;
     private final FileOperation operation;
+    private java.util.Collections Collections;
 
     public UserRepository(FileOperation operation) {
         this.mapper = new UserMapper();
@@ -28,13 +28,21 @@ public class UserRepository implements GBRepository {
         return users;
     }
 
+    public void userValid(User user) {
+        UserValidator validator = new UserValidator();
+
+        user.setFirstName(validator.isNameValid(user.getFirstName()));
+        user.setLastName(validator.isNameValid(user.getLastName()));
+    }
+
     @Override
     public User create(User user) {
+        userValid(user);
         List<User> users = findAll();
         long max = 0L;
         for (User u : users) {
             long id = u.getId();
-            if (max < id){
+            if (max < id) {
                 max = id;
             }
         }
@@ -57,21 +65,33 @@ public class UserRepository implements GBRepository {
                 .filter(u -> u.getId()
                         .equals(userId))
                 .findFirst().orElseThrow(() -> new RuntimeException("User not found"));
-        editUser.setFirstName(update.getFirstName());
-        editUser.setLastName(update.getLastName());
-        editUser.setPhone(update.getPhone());
+        if (!update.getFirstName().isEmpty()) {
+            editUser.setFirstName(update.getFirstName());
+        }
+        if (!update.getLastName().isEmpty()) {
+            editUser.setLastName(update.getLastName());
+        }
+        if (!update.getPhone().isEmpty()) {
+            editUser.setPhone(update.getPhone());
+        }
+
         write(users);
         return Optional.of(update);
     }
-
-    @Override
-    public boolean delete(Long id) {
-        return false;
+    public void delete(Long userId) {
+        List<User> users = findAll();
+        User DeleteUser = users.stream()
+                .filter(u -> u.getId()
+                        .equals(userId))
+                .findFirst().orElseThrow(() -> new RuntimeException("User not found"));
+        users.remove(DeleteUser);
+        write(users);
     }
+
 
     private void write(List<User> users) {
         List<String> lines = new ArrayList<>();
-        for (User u: users) {
+        for (User u : users) {
             lines.add(mapper.toInput(u));
         }
         operation.saveAll(lines);

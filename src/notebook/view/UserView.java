@@ -2,6 +2,7 @@ package notebook.view;
 
 import notebook.controller.UserController;
 import notebook.model.User;
+import notebook.model.repository.GBRepository;
 import notebook.util.Commands;
 
 import java.util.Scanner;
@@ -38,6 +39,14 @@ public class UserView {
                 case UPDATE:
                     String userId = prompt("Enter user id: ");
                     userController.updateUser(userId, createUser());
+                case LIST:
+                    System.out.println(userController.readAll());
+                case DELETE:
+                    String userID = prompt("Enter user id: ");
+                    userController.delete(userID);
+
+
+
             }
         }
     }

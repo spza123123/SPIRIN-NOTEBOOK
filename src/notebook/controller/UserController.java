@@ -1,8 +1,10 @@
 package notebook.controller;
 
 import notebook.model.User;
+import notebook.model.dao.impl.FileOperation;
 import notebook.model.repository.GBRepository;
 
+import javax.swing.plaf.PanelUI;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,9 +29,19 @@ public class UserController {
 
         throw new RuntimeException("User not found");
     }
-
+    public void delete(String id) {
+        repository.delete(Long.parseLong(id));
+    }
     public void updateUser(String userId, User update) {
         update.setId(Long.parseLong(userId));
         repository.update(Long.parseLong(userId), update);
     }
+
+    public List<User> readAll() {
+         return repository.findAll();
+
+
+
+    }
+
 }
